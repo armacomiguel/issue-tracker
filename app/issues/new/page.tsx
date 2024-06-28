@@ -10,10 +10,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { createIssueSchema } from '@/app/validationSchemas';
 import {z} from 'zod';
 import ErrorMessage from '@/app/components/ErrorMessage';
+import Spinner from '@/app/components/Spinner';
 
 type IssueForm = z.infer<typeof createIssueSchema>;
 
 const NewIssuePage = () => {
+    const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
     const router = useRouter();
     const {register, control, handleSubmit, formState: {errors}} = useForm<IssueForm>({
@@ -30,9 +32,11 @@ const NewIssuePage = () => {
 
         <form className='space-y-3' onSubmit={handleSubmit(async(data) => {
            try {
+                setSubmitting(true);
                 await axios.post('/api/issues',data);
                 router.push('/issues');
            } catch (error) {
+            setSubmitting(false);
             setError('¡Algo salío mal.!');
            }
         })}>
@@ -45,7 +49,7 @@ const NewIssuePage = () => {
                 render={({field}) => <SimpleMDE placeholder="Descripción" {...field} />}
             />
             { <ErrorMessage>{errors.description?.message}</ErrorMessage>}
-            <Button>Crear Nuevo Detalle</Button>
+            <Button disabled={submitting}>Crear Nuevo Detalle {submitting && <Spinner/ >} </Button>
         </form>
     </div>
   )
